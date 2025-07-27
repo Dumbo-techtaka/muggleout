@@ -1,76 +1,81 @@
-# 🤝 Contributing to Muggleout
+# Contributing to muggleout
 
-First off, thank you for considering contributing to Muggleout! 
+먼저 muggleout에 기여하고자 하는 마음에 감사드립니다! 🎉
 
-## 📋 Project History
+## 행동 강령
 
-Muggleout was created by **[Your Name]** as an internal tool at **[Company Name]** to help non-developers set up their development environment. It has since been open-sourced to benefit the wider community.
+이 프로젝트는 모든 참여자가 존중받고 환영받는 환경을 만들기 위해 노력합니다. 
 
-### Core Contributors
-- **[Your Name]** - Original author and maintainer
-  - Created the initial architecture
-  - Implemented natural language processing
-  - Designed the interactive UI system
-  - Built all installation automation
+## 어떻게 기여할 수 있나요?
 
-## 🏆 Recognition
+### 버그 리포트
+- GitHub Issues에서 이미 보고된 버그인지 확인해주세요
+- 버그 리포트 템플릿을 사용해주세요
+- 재현 가능한 단계를 자세히 설명해주세요
 
-This project was:
-- 🚀 Initiated by [Your Name] in January 2024
-- 💡 Designed to solve real problems faced by non-technical team members
-- 🛠️ Built with modern JavaScript and Node.js best practices
-- 🌟 Open-sourced with company support
+### 기능 제안
+- 먼저 비슷한 제안이 있는지 확인해주세요
+- 기능 제안 템플릿을 사용해주세요
+- 사용 시나리오를 구체적으로 설명해주세요
 
-## 🔧 How to Contribute
+### Pull Request
+1. Fork 후 새 브랜치를 만드세요
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
 
-### Reporting Bugs
-- Use the issue tracker
-- Include OS version and error messages
-- Provide steps to reproduce
+2. 변경사항을 커밋하세요
+   ```bash
+   git commit -m 'Add: 놀라운 기능 추가'
+   ```
 
-### Suggesting Features
-- Check existing issues first
-- Explain the use case
-- Consider the non-developer audience
+3. 테스트를 실행하세요
+   ```bash
+   npm test
+   ```
 
-### Pull Requests
-1. Fork the repo
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+4. Push 하고 PR을 만드세요
 
-## 💻 Development Setup
+## 개발 환경 설정
 
 ```bash
-# Clone the repository
-git clone https://github.com/company/muggleout.git
+# 저장소 클론
+git clone https://github.com/YOUR_USERNAME/muggleout
 cd muggleout
 
-# Install dependencies
+# 의존성 설치
 npm install
 
-# Run in development mode
+# 개발 모드 실행
 npm run dev
 
-# Run tests
+# 테스트 실행
 npm test
 ```
 
-## 📖 Code Style
+## 코드 스타일
+- ES6+ 문법을 사용합니다
+- 들여쓰기는 스페이스 2칸입니다
+- 세미콜론을 사용합니다
+- 한글 주석을 권장합니다 (비개발자도 이해할 수 있도록)
 
-- Use ES6+ features
-- Follow existing patterns
-- Add JSDoc comments for functions
-- Keep the non-developer user in mind
+## 커밋 메시지 규칙
+- `Add:` 새로운 기능 추가
+- `Fix:` 버그 수정
+- `Update:` 기능 개선
+- `Remove:` 기능 제거
+- `Docs:` 문서 수정
+- `Test:` 테스트 추가/수정
 
-## 📄 License
+예시:
+```
+Add: Gemini CLI 설치 지원
+Fix: Oh My Zsh 설치 오류 수정
+```
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+## 질문이 있나요?
 
----
+- GitHub Issues에 질문을 남겨주세요
+- 한국어로 편하게 질문하셔도 됩니다!
 
-<p align="center">
-  <strong>Original Author:</strong> <a href="https://github.com/yourusername">Your Name</a><br>
-  <em>Created at [Company Name]</em>
-</p>
+감사합니다! 🙏

@@ -164,14 +164,18 @@ const installConfigs = {
     requires: ['node'],
     install: async () => {
       console.log(chalk.blue('📦 Claude Code CLI 설치 중...'));
-      await runCommand('npm install -g @anthropic/claude-cli');
-      console.log(chalk.green('✅ 설치 완료! "claude --help"로 사용법을 확인하세요.'));
+      console.log(chalk.cyan(`⏱️  예상 소요 시간: ${estimatedTimes['claude-code']}`));
+      await runCommand('npm install -g @anthropic-ai/claude-code');
+      console.log(chalk.green('✅ 설치 완료!'));
     },
     postInstall: async () => {
       console.log(chalk.yellow('\n📌 다음 단계:'));
-      console.log('1. claude login 실행');
-      console.log('2. 브라우저에서 로그인');
-      console.log('3. claude chat으로 대화 시작!\n');
+      console.log('1. 프로젝트 폴더로 이동: cd your-project');
+      console.log('2. Claude 실행: claude');
+      console.log('3. 자연어로 코딩 시작!');
+      console.log(chalk.gray('\n예시: "이 파일의 버그를 찾아줘"'));
+      console.log(chalk.gray('예시: "테스트 코드 작성해줘"'));
+      console.log(chalk.cyan('\n더 자세한 사용법: claude --help\n'));
     }
   },
   

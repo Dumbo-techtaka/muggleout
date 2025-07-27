@@ -14,6 +14,19 @@
 - 플러그인 시스템
 - 웹 기반 설정 UI
 
+## [1.1.2] - 2025-01-27
+
+### 수정됨
+- Claude Code CLI 설치 시 잘못된 패키지명 수정 (@anthropic/claude-cli → @anthropic-ai/claude-code)
+- GitHub 저장소 URL 업데이트 (Dumbo-techtaka/muggleout)
+- 문서 링크 수정 및 업데이트
+
+### 개선됨
+- README.md를 완전 초보자 친화적으로 전면 개편
+- Node.js가 무엇인지부터 설명하는 상세한 설치 가이드 추가
+- 복사/붙여넣기 방법까지 포함한 친절한 안내
+- FAQ 섹션 확장 및 개선
+
 ## [1.1.1] - 2025-01-27
 
 ### 수정됨

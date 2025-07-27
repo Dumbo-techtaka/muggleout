@@ -467,10 +467,11 @@ async function troubleshoot() {
 // 문서 표시
 function showDocs() {
   console.log(chalk.bold('\n📚 문서 링크:\n'));
-  console.log('🔗 전체 문서: https://github.com/your-username/dev-tools-for-non-devs');
-  console.log('📖 터미널 기초: https://github.com/.../01-터미널이란.md');
-  console.log('🛠️ 설치 가이드: https://github.com/.../02-설치와-기본설정.md');
-  console.log('💡 문제 해결: https://github.com/.../06-문제해결.md\n');
+  console.log('🔗 프로젝트 홈: https://github.com/Dumbo-techtaka/muggleout');
+  console.log('📖 README: https://github.com/Dumbo-techtaka/muggleout#readme');
+  console.log('🛠️ 설치 가이드 (한글): https://github.com/Dumbo-techtaka/muggleout/blob/main/INSTALL_GUIDE_KR.md');
+  console.log('🐛 문제 신고: https://github.com/Dumbo-techtaka/muggleout/issues');
+  console.log('📧 이메일 문의: dumbo@techtaka.com\n');
   
   console.log(chalk.gray('Enter를 눌러 계속...'));
 }

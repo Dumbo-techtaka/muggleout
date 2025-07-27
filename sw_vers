@@ -1,7 +1,0 @@
-#!/bin/sh
-if [ "$1" = "-productVersion" ]; then
-    echo "13.0"
-else
-    echo "ProductName:    macOS"
-    echo "ProductVersion: 13.0"
-fi

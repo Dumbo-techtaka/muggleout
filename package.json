@@ -1,12 +1,12 @@
 {
   "name": "muggleout",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Transform muggles into terminal wizards / 비개발자를 터미널 마법사로 만들어주는 도구",
   "main": "src/index.js",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "private"
+    "url": "https://github.com/Dumbo-techtaka/muggleout.git"
   },
   "homepage": "https://www.npmjs.com/package/muggleout",
   "bugs": {
@@ -39,7 +39,7 @@
     "natural-language",
     "dev-tools"
   ],
-  "author": "dumbokim <rlawlsgus97@gmail.com>",
+  "author": "dumbokim <dumbo@techtaka.com> (rlawlsgus97@gmail.com)",
   "license": "MIT",
   "publishConfig": {
     "access": "public",
