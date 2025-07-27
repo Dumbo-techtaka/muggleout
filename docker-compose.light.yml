@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # 완전 초보자 환경 (Node.js도 없음!)
+  test-beginner:
+    build:
+      context: .
+      dockerfile: Dockerfile.real-beginner
+    container_name: dev-setup-beginner
+    stdin_open: true
+    tty: true
+    environment:
+      - TERM=xterm-256color
+      - TEST_PLATFORM=darwin
+    command: /bin/bash
+    
+  # dev-setup이 설치된 환경 (테스트용)
+  test-clean:
+    build:
+      context: .
+      dockerfile: Dockerfile.clean
+    container_name: dev-setup-clean
+    stdin_open: true
+    tty: true
+    environment:
+      - TERM=xterm-256color
+      - NODE_ENV=test
+      - TEST_ENV=clean
+      - TEST_PLATFORM=darwin
+    volumes:
+      # 소스 코드만 마운트 (node_modules 제외)
+      - ./src:/home/testuser/dev-setup-cli/src:ro
+      - ./bin:/home/testuser/dev-setup-cli/bin:ro
+    command: /bin/bash
+    
+  # Homebrew 설치된 환경 (가짜 Homebrew)
+  test-brew:
+    build:
+      context: .
+      dockerfile: Dockerfile.alpine
+    container_name: dev-setup-brew
+    stdin_open: true
+    tty: true
+    environment:
+      - TERM=xterm-256color
+      - NODE_ENV=test
+      - TEST_ENV=brew
+      - TEST_PLATFORM=darwin
+    volumes:
+      - ./src:/home/testuser/dev-setup-cli/src:ro
+      - ./bin:/home/testuser/dev-setup-cli/bin:ro
+    command: |
+      bash -c "
+        # 가짜 brew 명령어 생성
+        sudo mkdir -p /usr/local/bin &&
+        echo '#!/bin/sh
+        if [ \"\$1\" = \"--version\" ]; then
+          echo \"Homebrew 4.0.0\"
+        elif [ \"\$1\" = \"list\" ]; then
+          echo \"git\"
+          echo \"node\"
+        else
+          echo \"Mock brew: \$@\"
+        fi' | sudo tee /usr/local/bin/brew &&
+        sudo chmod +x /usr/local/bin/brew &&
+        export PATH=\"/usr/local/bin:\$PATH\" &&
+        echo 'Fake Homebrew installed!' &&
+        bash
+      "
+    
+  # 빠른 일회성 테스트
+  quick-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.alpine
+    container_name: dev-setup-quick
+    environment:
+      - TERM=xterm-256color
+    command: |
+      sh -c "
+        echo '=== 기본 테스트 ===' &&
+        dev-setup --version &&
+        echo '=== 상태 확인 ===' &&
+        dev-setup status &&
+        echo '=== 자연어 테스트 ===' &&
+        echo '도와줘' | timeout 2 dev-setup || true &&
+        echo '=== 테스트 완료 ==='
+      "

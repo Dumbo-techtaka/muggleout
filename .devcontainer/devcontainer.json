@@ -1,0 +1,17 @@
+{
+  "name": "Wizardify Test Environment",
+  "image": "ubuntu:22.04",
+  "features": {},
+  "postCreateCommand": "apt-get update && apt-get install -y curl && echo '🧙 Welcome to Wizardify Test Environment!' && echo '' && echo '⚡ This is a CLEAN environment:' && echo '  ❌ No Git' && echo '  ❌ No Node.js/npm' && echo '  ❌ No Homebrew' && echo '  ❌ No Oh My Zsh' && echo '  ❌ No development tools' && echo '' && echo '📌 Set test mode and run test script:' && echo '  export WIZARDIFY_TEST=1' && echo '  ./.devcontainer/test-wizardify.sh' && echo ''",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": []
+    }
+  },
+  "containerEnv": {
+    "WIZARDIFY_TEST": "1"
+  }
+}

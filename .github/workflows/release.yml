@@ -1,0 +1,124 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests
+        run: npm test
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Publish to NPM
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            ## 🚀 설치 방법
+
+            ### Homebrew
+            ```bash
+            brew install dev-setup-cli
+            ```
+
+            ### npm
+            ```bash
+            npm install -g dev-setup-cli
+            ```
+
+            ### 자동 설치 스크립트
+            ```bash
+            sh -c "$(curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/start.sh)"
+            ```
+
+            ## 📋 변경사항
+            - 자세한 내용은 [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) 참조
+          draft: false
+          prerelease: false
+
+  build-binaries:
+    needs: release
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            platform: darwin
+            arch: x64
+          - os: macos-latest
+            platform: darwin
+            arch: arm64
+          - os: windows-latest
+            platform: win32
+            arch: x64
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install pkg
+        run: npm install -g pkg
+      
+      - name: Build binary
+        run: |
+          pkg . --targets node18-${{ matrix.platform }}-${{ matrix.arch }} --output dist/dev-setup-${{ matrix.platform }}-${{ matrix.arch }}
+      
+      - name: Upload binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: dev-setup-${{ matrix.platform }}-${{ matrix.arch }}
+          path: dist/dev-setup-${{ matrix.platform }}-${{ matrix.arch }}*
+
+  update-homebrew:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Homebrew Formula
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          repository: your-username/homebrew-dev-setup
+          title: Update dev-setup-cli to ${{ github.ref }}
+          body: |
+            Automated update of dev-setup-cli formula to version ${{ github.ref }}
+            
+            - SHA256 checksum updated
+            - Version bumped
+          branch: update-${{ github.ref }}
+          commit-message: Update dev-setup-cli to ${{ github.ref }}

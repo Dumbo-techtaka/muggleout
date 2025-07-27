@@ -1,0 +1,60 @@
+# 개발 관련
+.git/
+.github/
+.vscode/
+.idea/
+*.log
+*.swp
+.DS_Store
+
+# 테스트 관련
+test/
+coverage/
+.nyc_output/
+*.test.js
+*.spec.js
+__tests__/
+
+# 빌드 관련
+dist/
+build/
+*.tgz
+
+# Docker 관련
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# 문서 (GitHub에서 보는 용도)
+docs/
+homebrew/
+scripts/test-*.sh
+*.sh
+ARCHITECTURE.md
+GO_MIGRATION_PLAN.md
+NODE_VS_GO_COMPARISON.md
+TYPESCRIPT_MIGRATION.md
+
+# 설정 파일
+.eslintrc*
+.prettierrc*
+.editorconfig
+tsconfig.json
+.devcontainer/
+
+# 기타
+TODO.md
+CONTRIBUTING.md
+.env*
+.npmrc
+
+# 테스트 환경
+test-*.sh
+install.py
+start-docker.sh
+
+# 유지할 파일들은 package.json의 "files" 필드에 명시됨:
+# - bin/
+# - src/
+# - README.md
+# - LICENSE

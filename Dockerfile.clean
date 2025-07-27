@@ -1,0 +1,54 @@
+# 완전 초보자 환경 - 개발 도구가 하나도 없는 깨끗한 시스템
+FROM node:18-alpine
+
+# 최소한의 패키지만 설치 (git, npm 등 제외)
+RUN apk add --no-cache \
+    bash \
+    curl \
+    sudo \
+    shadow
+
+# 테스트 사용자 생성
+RUN adduser -D -s /bin/bash testuser && \
+    echo "testuser:password" | chpasswd && \
+    echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# 작업 디렉토리 설정
+WORKDIR /home/testuser
+
+# package.json만 먼저 복사 (캐시 활용)
+COPY --chown=testuser:testuser package*.json /home/testuser/dev-setup-cli/
+
+# 사용자 전환
+USER testuser
+WORKDIR /home/testuser/dev-setup-cli
+
+# npm 의존성 설치 (캐시됨)
+RUN npm ci --omit=dev
+
+# 나머지 파일 복사
+COPY --chown=testuser:testuser . /home/testuser/dev-setup-cli/
+
+# 전역 설치 (npm link 대신)
+USER root
+RUN npm install -g . --unsafe-perm
+USER testuser
+
+# 가짜 macOS 명령어
+USER root
+COPY sw_vers /usr/local/bin/sw_vers
+RUN chmod +x /usr/local/bin/sw_vers
+
+# 기본 개발 도구들 제거 (git은 이미 설치 안됨)
+# npm은 dev-setup을 실행하기 위해 남겨둠
+RUN rm -f /usr/bin/git /usr/local/bin/git 2>/dev/null || true
+
+# 가짜 명령어들 생성 (command not found 시뮬레이션)
+RUN printf '#!/bin/sh\nexit 127\n' > /usr/local/bin/git && chmod +x /usr/local/bin/git && \
+    printf '#!/bin/sh\nexit 127\n' > /usr/local/bin/code && chmod +x /usr/local/bin/code && \
+    printf '#!/bin/sh\nexit 127\n' > /usr/local/bin/brew && chmod +x /usr/local/bin/brew && \
+    printf '#!/bin/sh\nexit 127\n' > /usr/local/bin/claude && chmod +x /usr/local/bin/claude && \
+    printf '#!/bin/sh\nexit 127\n' > /usr/local/bin/gemini && chmod +x /usr/local/bin/gemini
+
+USER testuser
+CMD ["/bin/bash"]

@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.dockerignore
+Dockerfile*
+docker-compose*.yml
+.DS_Store
+*.log
+.env
+coverage
+.nyc_output
+.vscode
+.idea
+# test-*.sh (brew 테스트를 위해 제외)
+manual-test-guide.md
+README.md

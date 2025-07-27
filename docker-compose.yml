@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # 클린 환경 테스트
+  test-clean:
+    build: .
+    container_name: dev-setup-test-clean
+    stdin_open: true
+    tty: true
+    environment:
+      - TERM=xterm-256color
+      - NODE_ENV=test
+    volumes:
+      # 소스 코드는 실시간 반영을 위해 마운트
+      - ./src:/home/testuser/dev-setup-cli/src
+      - ./bin:/home/testuser/dev-setup-cli/bin
+    command: /bin/bash
+
+  # Homebrew가 설치된 환경 테스트
+  test-with-brew:
+    build:
+      context: .
+      dockerfile: Dockerfile.brew
+    container_name: dev-setup-test-brew
+    stdin_open: true
+    tty: true
+    environment:
+      - TERM=xterm-256color
+      - NODE_ENV=test
+    volumes:
+      - ./src:/home/testuser/dev-setup-cli/src
+      - ./bin:/home/testuser/dev-setup-cli/bin
+    command: /bin/bash
+
+  # 자동 테스트 실행
+  test-runner:
+    build: .
+    container_name: dev-setup-test-runner
+    environment:
+      - TERM=xterm-256color
+      - NODE_ENV=test
+      - CI=true
+    volumes:
+      - ./src:/home/testuser/dev-setup-cli/src
+      - ./bin:/home/testuser/dev-setup-cli/bin
+      - ./test:/home/testuser/dev-setup-cli/test
+    command: npm test

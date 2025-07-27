@@ -1,0 +1,84 @@
+name: Publish to Package Registries
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 1.0.1)'
+        required: true
+        type: string
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests
+        run: npm test
+      
+      # NPM 배포
+      - name: Publish to NPM
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      # Yarn 호환성은 NPM에서 자동 지원
+      # pnpm도 NPM registry 사용
+      
+      # GitHub Package Registry (선택사항)
+      - name: Setup for GitHub Registry
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@dumbokim'
+      
+      - name: Publish to GitHub Packages
+        run: |
+          npm config set @dumbokim:registry https://npm.pkg.github.com
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true  # GitHub Packages는 선택사항
+
+  create-release-notes:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Generate Release Notes
+        run: |
+          echo "## 🎉 muggleout v${{ github.event.release.tag_name || github.event.inputs.version }} Released!"
+          echo ""
+          echo "### 📦 Installation"
+          echo '```bash'
+          echo "# NPM"
+          echo "npm install -g muggleout"
+          echo ""
+          echo "# Yarn" 
+          echo "yarn global add muggleout"
+          echo ""
+          echo "# pnpm"
+          echo "pnpm add -g muggleout"
+          echo ""
+          echo "# Bun"
+          echo "bun add -g muggleout"
+          echo '```'
+          echo ""
+          echo "### 🚀 Usage"
+          echo '```bash'
+          echo "muggleout"
+          echo '```'

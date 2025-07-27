@@ -1,0 +1,6 @@
+{
+  "name": "Wizardify Dev",
+  "image": "node:20-bullseye",
+  "postCreateCommand": "npm install && npm link && echo '✨ Ready! Run: wizardify'",
+  "remoteUser": "node"
+}
