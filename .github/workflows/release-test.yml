@@ -100,7 +100,7 @@ jobs:
           npm ci
           npm link
       
-      - name: Run scenario: ${{ matrix.scenario }}
+      - name: "Run scenario: ${{ matrix.scenario }}"
         run: |
           ${{ matrix.commands }}
         shell: bash

@@ -44,6 +44,7 @@ jobs:
         run: npm test
         env:
           CI: true
+          NODE_OPTIONS: --experimental-vm-modules
       
       - name: Test CLI execution
         run: |
