@@ -9,10 +9,51 @@
 
 ### 추가될 기능
 - Windows 지원
-- Linux 지원  
+- Linux 완전 지원  
 - 더 많은 AI 도구 지원 (GitHub Copilot CLI 등)
 - 플러그인 시스템
 - 웹 기반 설정 UI
+
+## [1.1.3] - 2025-01-28
+
+### 추가됨
+- 🔐 **통합 sudo 권한 관리 시스템 (SudoManager)**
+  - 일관된 비밀번호 입력 안내
+  - Touch ID 사용자를 위한 특별 안내
+  - 3회 시도 제한 및 보안 강화
+  - Caps Lock, 한/영 상태 확인 안내
+
+- 📋 **배포 자동화 시스템**
+  - pre-release-check 스크립트
+  - GitHub Actions 플랫폼별 테스트
+  - release 브랜치 전용 테스트
+
+- 📚 **프로젝트 문서화**
+  - 배포 체크리스트 (RELEASE_CHECKLIST.md)
+  - 브랜치 전략 (BRANCH_STRATEGY.md)
+  - 테스트 전략 (TEST_STRATEGY.md)
+
+### 개선됨
+- 🚀 **Homebrew 설치 프로세스 전면 개선**
+  - 설치 중 발생하는 프롬프트 사전 안내
+  - ora 스피너와 interactive 모드 충돌 해결
+  - 비밀번호 입력이 화면에 표시되지 않는다는 명확한 안내
+  
+- 📦 **npm 전역 설치 권한 문제 해결**
+  - EACCES 에러 자동 감지
+  - 3가지 해결 옵션 제시 (sudo, npm-global, 나중에)
+  - sudo 사용 시 권장하지 않는 이유 설명
+
+- 🛠️ **fix 명령어 보안 강화**
+  - 위험한 시스템 경로 차단 (/, /System, /etc 등)
+  - 권한 변경 전 충분한 경고 메시지
+
+### 수정됨
+- Git 설치 시 Linux 환경에서 sudo 처리 개선
+- 모든 sudo 관련 에러 메시지 통일
+- 초보자가 이해하기 쉬운 에러 메시지로 개선
+- package.json의 projectName 수정 (dev-setup-cli → muggleout)
+- config.js의 projectName 통일
 
 ## [1.1.2] - 2025-01-27
 

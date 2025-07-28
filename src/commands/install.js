@@ -4,6 +4,7 @@ import inquirer from 'inquirer';
 import { execa } from 'execa';
 import { checkInstalled, saveInstallRecord } from '../utils/config.js';
 import { runCommand, commandExists } from '../utils/runner.js';
+import { SudoManager } from '../utils/sudo-manager.js';
 
 // checkCommand 함수 정의
 async function checkCommand(command) {
@@ -46,19 +47,85 @@ const installConfigs = {
     name: 'Homebrew',
     check: () => commandExists('brew'),
     install: async () => {
-      console.log(chalk.yellow('📋 Homebrew 설치 스크립트를 실행합니다...'));
-      console.log(chalk.gray('비밀번호 입력이 필요할 수 있습니다.'));
-      console.log(chalk.cyan(`⏱️  예상 소요 시간: ${estimatedTimes.homebrew}`));
+      console.log(chalk.yellow('\n📋 Homebrew 설치 안내'));
+      console.log(chalk.gray('━'.repeat(50)));
+      console.log(chalk.yellow('\n⚠️  설치 중 이런 일이 일어납니다:'));
+      console.log(chalk.cyan('  1. 비밀번호 입력 → Mac 로그인 비밀번호를 입력하세요'));
+      console.log(chalk.gray('     (입력해도 화면에 아무것도 안 보이는게 정상입니다!)'));
+      console.log(chalk.cyan('  2. "Press RETURN/ENTER to continue" → Enter 키를 누르세요'));
+      console.log(chalk.cyan('  3. 한번 더 비밀번호 입력 → 다시 입력하세요'));
+      console.log(chalk.red('\n  💡 설치를 취소하려면 Ctrl+C를 누르세요'));
+      console.log(chalk.gray('━'.repeat(50)));
       
-      await runCommand('/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"', {
-        interactive: true
-      });
+      // inquirer로 준비 확인 (stdin 충돌 방지)
+      const { ready } = await inquirer.prompt([{
+        type: 'confirm',
+        name: 'ready',
+        message: '위 안내사항을 확인했습니다. 설치를 시작하시겠습니까?',
+        default: true
+      }]);
+      
+      if (!ready) {
+        console.log(chalk.yellow('설치가 취소되었습니다.'));
+        return;
+      }
+      
+      console.log(chalk.blue('\n🚀 Homebrew 설치를 시작합니다...'));
+      console.log(chalk.yellow('💡 비밀번호를 물어보면 Mac 로그인 비밀번호를 입력하세요!'));
+      console.log(chalk.gray('(비밀번호는 보안상 화면에 표시되지 않습니다)\n'));
+      
+      try {
+        // Homebrew 설치 스크립트는 자체적으로 sudo를 처리하므로 별도의 권한 요청 불필요
+        console.log(chalk.blue('📥 Homebrew 설치 스크립트를 다운로드합니다...'));
+        console.log(chalk.gray('설치 스크립트가 필요한 권한을 자동으로 요청할 거예요\n'));
+        
+        await runCommand('curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | /bin/bash', {
+          interactive: true
+        });
+      } catch (error) {
+        // 사용자가 취소한 경우
+        if (error.message.includes('SIGINT') || error.message.includes('canceled')) {
+          console.log(chalk.yellow('\n설치가 취소되었습니다.'));
+          return;
+        }
+        
+        console.log(chalk.red('\n❌ Homebrew 설치 중 오류가 발생했습니다.'));
+        
+        // 권한 문제인 경우
+        if (error.message.includes('sudo') || error.message.includes('permission') || error.message.includes('Password')) {
+          console.log(chalk.yellow('\n💡 비밀번호 관련 팁:'));
+          console.log('• Mac 로그인할 때 사용하는 비밀번호를 입력하세요');
+          console.log('• 입력 시 화면에 표시되지 않습니다 (정상)');
+          console.log('• Caps Lock이 켜져있지 않은지 확인하세요');
+          console.log('• 한글로 입력하고 있지 않은지 확인하세요');
+        }
+        
+        // brew가 이미 설치되어 있는지 확인
+        const brewExists = await commandExists('brew');
+        if (brewExists) {
+          console.log(chalk.green('\n✅ 하지만 brew가 이미 설치되어 있습니다!'));
+          return;
+        }
+        
+        // 일반적인 해결 방법
+        if (!error.message.includes('sudo') && !error.message.includes('Administrator')) {
+          console.log(chalk.yellow('\n💡 해결 방법:'));
+          console.log('1. 인터넷 연결을 확인하세요');
+          console.log('2. 다시 시도해보세요: muggleout install homebrew');
+          console.log('3. 수동 설치: https://brew.sh 에서 설치 명령어 복사');
+        }
+        
+        throw error;
+      }
       
       // PATH 설정
       const arch = process.arch;
       const brewPath = arch === 'arm64' ? '/opt/homebrew' : '/usr/local';
-      console.log(chalk.blue('🔧 PATH 설정 중...'));
+      console.log(chalk.blue('\n🔧 PATH 설정 중...'));
       await runCommand(`echo 'eval "$(${brewPath}/bin/brew shellenv)"' >> ~/.zprofile`);
+      
+      // 현재 세션에도 PATH 적용
+      process.env.PATH = `${brewPath}/bin:${brewPath}/sbin:${process.env.PATH}`;
     },
     postInstall: async () => {
       console.log(chalk.green('\n✅ Homebrew 설치 완료!'));
@@ -165,8 +232,60 @@ const installConfigs = {
     install: async () => {
       console.log(chalk.blue('📦 Claude Code CLI 설치 중...'));
       console.log(chalk.cyan(`⏱️  예상 소요 시간: ${estimatedTimes['claude-code']}`));
-      await runCommand('npm install -g @anthropic-ai/claude-code');
-      console.log(chalk.green('✅ 설치 완료!'));
+      
+      try {
+        await runCommand('npm install -g @anthropic-ai/claude-code');
+        console.log(chalk.green('✅ 설치 완료!'));
+      } catch (error) {
+        if (error.message.includes('EACCES') || error.message.includes('permission denied')) {
+          console.log(chalk.red('\n❌ npm 전역 설치 권한 문제가 발생했습니다!'));
+          console.log(chalk.yellow('\n💡 해결 방법을 선택하세요:'));
+          
+          const { solution } = await inquirer.prompt([{
+            type: 'list',
+            name: 'solution',
+            message: '어떻게 해결하시겠습니까?',
+            choices: [
+              { name: '1. sudo로 다시 시도 (간단하지만 권장하지 않음)', value: 'sudo' },
+              { name: '2. npm 전역 디렉토리 변경 (권장)', value: 'npm-global' },
+              { name: '3. 나중에 해결하기', value: 'skip' }
+            ]
+          }]);
+          
+          if (solution === 'sudo') {
+            console.log(chalk.yellow('\n⚠️  sudo를 사용한 npm 설치는 권장하지 않습니다!'));
+            console.log(chalk.gray('이유: 나중에 권한 문제가 계속 발생할 수 있습니다\n'));
+            
+            const hasSudo = await SudoManager.requestSudo('Claude Code CLI 설치 (npm)');
+            if (!hasSudo) {
+              console.log(chalk.yellow('\n설치가 취소되었습니다.'));
+              return;
+            }
+            
+            await runCommand('sudo npm install -g @anthropic-ai/claude-code');
+            console.log(chalk.green('✅ 설치 완료!'));
+            console.log(chalk.yellow('\n💡 향후 npm 전역 디렉토리 변경을 권장합니다'));
+            console.log(chalk.gray('방법: muggleout fix 실행 후 "npm 권한 문제" 선택'));
+          } else if (solution === 'npm-global') {
+            console.log(chalk.blue('\nnpm 전역 디렉토리를 설정합니다...'));
+            await runCommand('mkdir -p ~/.npm-global');
+            await runCommand('npm config set prefix "~/.npm-global"');
+            await runCommand('echo \'export PATH=~/.npm-global/bin:$PATH\' >> ~/.zprofile');
+            await runCommand('export PATH=~/.npm-global/bin:$PATH');
+            
+            console.log(chalk.green('✅ 설정 완료! 다시 설치합니다...'));
+            await runCommand('npm install -g @anthropic-ai/claude-code');
+            console.log(chalk.green('✅ Claude Code CLI 설치 완료!'));
+            console.log(chalk.yellow('\n⚠️  터미널을 재시작하면 어디서나 claude 명령을 사용할 수 있습니다!'));
+          } else {
+            console.log(chalk.yellow('\n나중에 다음 명령으로 설치하세요:'));
+            console.log(chalk.cyan('  muggleout install claude-code'));
+            return;
+          }
+        } else {
+          throw error;
+        }
+      }
     },
     postInstall: async () => {
       console.log(chalk.yellow('\n📌 다음 단계:'));
@@ -300,9 +419,21 @@ const installConfigs = {
       } else {
         // Linux
         console.log(chalk.blue('Git을 설치합니다...'));
-        await runCommand('sudo apt-get update && sudo apt-get install -y git', {
-          interactive: true
-        });
+        console.log(chalk.yellow('💡 비밀번호를 입력하세요 (Linux 로그인 비밀번호):'));
+        console.log(chalk.gray('(비밀번호는 화면에 표시되지 않습니다)\n'));
+        
+        try {
+          await runCommand('sudo apt-get update && sudo apt-get install -y git', {
+            interactive: true
+          });
+        } catch (error) {
+          if (error.message.includes('incorrect password')) {
+            console.log(chalk.red('\n❌ 비밀번호가 틀렸습니다!'));
+            console.log(chalk.yellow('다시 시도: muggleout install git'));
+          } else {
+            throw error;
+          }
+        }
       }
     },
     postInstall: async () => {
@@ -414,11 +545,25 @@ export async function installTool(toolName) {
   if (estimatedTimes[toolName] && !config.virtual) {
     console.log(chalk.cyan(`⏱️  예상 소요 시간: ${estimatedTimes[toolName]}`));
   }
-  const spinner = ora(`${config.name} 설치 중...`).start();
+  
+  // Homebrew 같은 interactive 설치는 스피너 사용하지 않음
+  const isInteractiveInstall = toolName === 'homebrew' || toolName === 'git';
+  let spinner = null;
+  
+  if (!isInteractiveInstall) {
+    spinner = ora(`${config.name} 설치 중...`).start();
+  } else {
+    console.log(chalk.blue(`🚀 ${config.name} 설치를 시작합니다...`));
+  }
   
   try {
     await config.install();
-    spinner.succeed(`${config.name} 설치 완료!`);
+    
+    if (spinner) {
+      spinner.succeed(`${config.name} 설치 완료!`);
+    } else {
+      console.log(chalk.green(`✅ ${config.name} 설치 완료!`));
+    }
     
     // 설치 기록 저장
     if (!config.virtual) {
@@ -430,7 +575,11 @@ export async function installTool(toolName) {
       await config.postInstall();
     }
   } catch (error) {
-    spinner.fail(`${config.name} 설치 실패`);
+    if (spinner) {
+      spinner.fail(`${config.name} 설치 실패`);
+    } else {
+      console.log(chalk.red(`❌ ${config.name} 설치 실패`));
+    }
     console.error(chalk.red('에러:', error.message));
     
     // 에러 리포팅

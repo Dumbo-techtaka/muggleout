@@ -15,11 +15,11 @@ export async function runCommand(command, options = {}) {
   try {
     if (interactive) {
       // 대화형 명령어 (사용자 입력 필요)
-      await execa('bash', ['-c', expandedCommand], {
-        stdio: 'inherit',
-        shell: true
+      // shell: true 제거 - bash -c와 충돌
+      const result = await execa('bash', ['-c', expandedCommand], {
+        stdio: 'inherit'
       });
-      return { stdout: '', stderr: '', exitCode: 0 };
+      return { stdout: '', stderr: '', exitCode: result.exitCode || 0 };
     } else {
       // 일반 명령어 - shell: true 제거하여 정확한 exit code 얻기
       const result = await execa('bash', ['-c', expandedCommand]);

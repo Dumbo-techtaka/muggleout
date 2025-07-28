@@ -3,7 +3,7 @@ import chalk from 'chalk';
 
 // 설정 저장소 초기화
 const config = new Conf({
-  projectName: 'dev-setup-cli',
+  projectName: 'muggleout',
   defaults: {
     installed: {},
     preferences: {

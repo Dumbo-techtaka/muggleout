@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
 import { runCommand } from '../utils/runner.js';
+import { SudoManager } from '../utils/sudo-manager.js';
 
 // 문제 해결 설정
 const fixes = {
@@ -56,15 +57,40 @@ const fixes = {
         {
           name: '파일/폴더 권한 변경',
           fix: async () => {
+            console.log(chalk.yellow('\n⚠️  주의: 시스템 파일을 변경하면 위험할 수 있습니다!'));
             const { path } = await inquirer.prompt([
               {
                 type: 'input',
                 name: 'path',
                 message: '권한을 변경할 파일/폴더 경로:',
-                default: '/usr/local'
+                default: '/usr/local',
+                validate: (input) => {
+                  // 위험한 경로 차단
+                  const dangerousPaths = ['/', '/System', '/Library', '/bin', '/sbin', '/etc', '/var', '/private'];
+                  if (dangerousPaths.includes(input.trim())) {
+                    return '❌ 시스템 핵심 폴더는 변경할 수 없습니다!';
+                  }
+                  return true;
+                }
               }
             ]);
-            await runCommand(`sudo chown -R $(whoami) ${path}`);
+            
+            console.log(chalk.cyan('\n관리자 권한이 필요합니다. 비밀번호를 입력해주세요:'));
+            console.log(chalk.gray('(비밀번호는 화면에 표시되지 않습니다)\n'));
+            
+            const hasSudo = await SudoManager.requestSudo(`${path} 권한 변경`);
+            if (!hasSudo) {
+              console.log(chalk.yellow('\n권한 변경이 취소되었습니다.'));
+              return;
+            }
+            
+            try {
+              await runCommand(`sudo chown -R $(whoami) ${path}`);
+              console.log(chalk.green(`✅ ${path} 권한이 변경되었습니다!`));
+            } catch (error) {
+              console.log(chalk.red('\n❌ 권한 변경에 실패했습니다'));
+              console.log(chalk.gray(`오류: ${error.message}`));
+            }
           }
         },
         {
