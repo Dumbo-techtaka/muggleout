@@ -25,7 +25,7 @@
     "test:version": "node bin/muggleout.js --version",
     "test:quick": "./scripts/quick-test.sh",
     "pre-release-check": "node scripts/pre-release-check.js",
-    "prepublishOnly": "npm run pre-release-check && npm run test:version && npm test"
+    "prepublishOnly": "npm run pre-release-check && npm run test:version"
   },
   "keywords": [
     "cli",

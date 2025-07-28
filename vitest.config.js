@@ -8,6 +8,9 @@ export default defineConfig({
     // 테스트 환경
     environment: 'node',
     
+    // ESM 모킹을 위한 설정
+    pool: 'forks',
+    
     // 커버리지 설정
     coverage: {
       provider: 'v8',

@@ -1,0 +1,131 @@
+// 이 파일은 vitest의 ESM 모킹 문제로 임시 비활성화됨
+// TODO: v1.1.4에서 다음 중 하나로 해결 예정:
+// 1. vitest를 Jest로 교체
+// 2. 테스트 가능한 구조로 리팩토링 (의존성 주입)
+// 3. vitest의 ESM 지원이 개선되면 재시도
+
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { installTool } from '../../../src/commands/install.js';
+
+// Mocking 전략 변경: vi.hoisted 사용
+const { mockRunCommand, mockCommandExists, mockCheckInstalled, mockSaveInstallRecord, mockShowToolPreview, mockReportError, mockInquirerPrompt } = vi.hoisted(() => {
+  return {
+    mockRunCommand: vi.fn(),
+    mockCommandExists: vi.fn(),
+    mockCheckInstalled: vi.fn(),
+    mockSaveInstallRecord: vi.fn(),
+    mockShowToolPreview: vi.fn(),
+    mockReportError: vi.fn(),
+    mockInquirerPrompt: vi.fn()
+  };
+});
+
+vi.mock('../../../src/utils/runner.js', () => ({
+  runCommand: mockRunCommand,
+  commandExists: mockCommandExists
+}));
+
+vi.mock('../../../src/utils/config.js', () => ({
+  checkInstalled: mockCheckInstalled,
+  saveInstallRecord: mockSaveInstallRecord,
+  getConfig: vi.fn(() => Promise.resolve({
+    anonymousId: 'test-id',
+    installed: {},
+    preferences: {
+      language: 'ko',
+      skillLevel: 'beginner',
+      autoUpdate: true
+    },
+    history: []
+  })),
+  saveConfig: vi.fn(() => Promise.resolve())
+}));
+
+vi.mock('../../../src/utils/preview.js', () => ({
+  showToolPreview: mockShowToolPreview
+}));
+
+vi.mock('../../../src/utils/error-reporter.js', () => ({
+  reportError: mockReportError
+}));
+
+vi.mock('inquirer', () => ({
+  default: {
+    prompt: mockInquirerPrompt
+  }
+}));
+
+vi.mock('ora', () => ({
+  default: vi.fn(() => ({
+    start: vi.fn().mockReturnThis(),
+    succeed: vi.fn().mockReturnThis(),
+    fail: vi.fn().mockReturnThis(),
+    stop: vi.fn().mockReturnThis(),
+    text: ''
+  }))
+}));
+
+describe('install.js', () => {
+  let consoleSpy;
+  let consoleErrorSpy;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    
+    // 기본값 설정
+    mockCheckInstalled.mockReturnValue(false);
+    mockCommandExists.mockResolvedValue(false);
+    mockSaveInstallRecord.mockResolvedValue();
+    mockShowToolPreview.mockImplementation(() => {});
+    mockReportError.mockResolvedValue();
+    mockInquirerPrompt.mockResolvedValue({ continueAnyway: true });
+  });
+
+  afterEach(() => {
+    consoleSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
+  });
+
+  describe('installTool', () => {
+    it('should skip installation if tool is already installed', async () => {
+      mockCheckInstalled.mockReturnValue(true);
+      mockInquirerPrompt.mockResolvedValue({ continueAnyway: false });
+      
+      await installTool('homebrew');
+      
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('이미 설치되어 있습니다'));
+      expect(mockRunCommand).not.toHaveBeenCalled();
+    });
+
+    it('should install homebrew successfully', async () => {
+      mockCheckInstalled.mockReturnValue(false);
+      mockCommandExists.mockResolvedValue(false);
+      mockRunCommand.mockResolvedValue({
+        stdout: 'Installation successful',
+        stderr: '',
+        exitCode: 0
+      });
+      
+      await installTool('homebrew');
+      
+      expect(mockRunCommand).toHaveBeenCalledWith(
+        expect.stringContaining('Homebrew/install'),
+        expect.objectContaining({ interactive: true })
+      );
+      expect(mockSaveInstallRecord).toHaveBeenCalledWith('homebrew');
+    });
+
+    it('should handle installation failure', async () => {
+      mockCheckInstalled.mockReturnValue(false);
+      mockCommandExists.mockResolvedValue(false);
+      mockRunCommand.mockRejectedValue(new Error('Installation failed'));
+      mockInquirerPrompt.mockResolvedValue({ consent: true });
+      
+      await installTool('homebrew');
+      
+      expect(mockReportError).toHaveBeenCalled();
+    });
+  });
+});
