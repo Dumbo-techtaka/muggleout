@@ -106,12 +106,13 @@ jobs:
           MUGGLEOUT_TEST: true
       
       - name: "Run scenario: ${{ matrix.scenario }}"
-        run: |
-          ${{ matrix.commands }} || echo "⚠️ Scenario had issues but continuing"
-        shell: bash
         env:
           CI: true
           MUGGLEOUT_TEST: true
+        shell: bash
+        run: |
+          echo "Starting scenario: ${{ matrix.scenario }}"
+          ${{ matrix.commands }}
       
       - name: Cleanup
         if: always()
@@ -211,15 +212,18 @@ jobs:
           MUGGLEOUT_TEST: true
       
       - name: Measure startup time
+        env:
+          CI: true
+          MUGGLEOUT_TEST: true
+        shell: bash
         run: |
           echo "⏱️  Measuring startup performance..."
           
           # 간단히 몇 번 실행하여 확인
           for i in {1..3}; do
             echo "Run $i:"
-            time muggleout --version
+            muggleout --version
           done
-        shell: bash
       
       - name: Memory usage check
         run: |

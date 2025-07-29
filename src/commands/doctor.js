@@ -1,7 +1,7 @@
 import chalk from 'chalk';
-import ora from 'ora';
 import { checkSystem, checkNetwork, checkDiskSpace } from '../utils/system-check.js';
 import { runCommand, commandExists } from '../utils/runner.js';
+import { createSpinner, isCI } from '../utils/ci-helper.js';
 import * as emoji from 'node-emoji';
 
 // 시스템 진단
@@ -143,7 +143,8 @@ export async function runDoctor() {
   
   // 각 항목 체크
   for (const check of checks) {
-    const spinner = ora(check.name).start();
+    const spinner = await createSpinner(check.name);
+    spinner.start();
     
     try {
       const result = await check.check();

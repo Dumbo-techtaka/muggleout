@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import boxen from 'boxen';
 import semver from 'semver';
 import { getConfig, saveConfig } from './config.js';
+import { createSpinner, isCI } from './ci-helper.js';
 
 // npm 레지스트리에서 최신 버전 확인
 async function getLatestVersion(packageName) {
@@ -129,7 +130,8 @@ export async function performUpdate() {
   console.log(chalk.blue('\n📦 업데이트를 시작합니다...\n'));
   
   try {
-    const spinner = (await import('ora')).default('muggleout 최신 버전 설치 중...').start();
+    const spinner = await createSpinner('muggleout 최신 버전 설치 중...');
+    spinner.start();
     
     // npm을 통한 글로벌 업데이트
     execSync('npm install -g muggleout@latest', { stdio: 'pipe' });

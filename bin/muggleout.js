@@ -61,14 +61,17 @@ program
   .action(async (command) => {
     showBanner();
     
-    // 업데이트 체크 (백그라운드)
-    checkUpdateOnStart();
-    
-    // 시스템 체크
-    await checkSystem();
-    
-    // 터미널 환경 체크
-    await checkTerminalEnvironment();
+    // CI 환경에서는 체크 건너뛰기
+    if (!process.env.CI && !process.env.MUGGLEOUT_TEST) {
+      // 업데이트 체크 (백그라운드)
+      checkUpdateOnStart();
+      
+      // 시스템 체크
+      await checkSystem();
+      
+      // 터미널 환경 체크
+      await checkTerminalEnvironment();
+    }
     
     if (command.length === 0) {
       // CI 환경에서는 대화형 모드 건너뛰기

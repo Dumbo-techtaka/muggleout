@@ -47,11 +47,13 @@ jobs:
           NODE_OPTIONS: --experimental-vm-modules
       
       - name: Test CLI execution
-        run: |
-          npm link
         env:
           CI: true
           MUGGLEOUT_TEST: true
+        shell: bash
+        run: |
+          echo "Setting up CLI test environment..."
+          npm link
           
           # 핵심 명령어만 테스트 (죽지 않는지 확인)
           echo "=== Version Test ==="
@@ -77,8 +79,8 @@ jobs:
           echo "=== Natural Language Test ==="
           muggleout "help" || echo "Natural language test completed"
           
+          echo "Cleaning up..."
           npm unlink
-        shell: bash
       
       # 플랫폼별 특수 테스트
       - name: Platform-specific tests (macOS)
@@ -154,8 +156,11 @@ jobs:
         shell: bash
       
       - name: Run scenario tests
-        run: ${{ matrix.test-commands }}
+        env:
+          CI: true
+          MUGGLEOUT_TEST: true
         shell: bash
+        run: ${{ matrix.test-commands }}
       
       - name: Cleanup
         if: always()
@@ -180,6 +185,11 @@ jobs:
           node-version: 18
       
       - name: Simulate fresh npm install
+        env:
+          CI: true
+          MUGGLEOUT_TEST: true
+        shell: bash
+        if: runner.os != 'Windows'
         run: |
           # 임시 디렉토리에서 설치 테스트
           mkdir -p /tmp/muggleout-test
@@ -187,10 +197,13 @@ jobs:
           npm init -y
           npm install $GITHUB_WORKSPACE
           npx muggleout --version
-        shell: bash
-        if: runner.os != 'Windows'
       
       - name: Simulate fresh npm install (Windows)
+        env:
+          CI: true
+          MUGGLEOUT_TEST: true
+        shell: pwsh
+        if: runner.os == 'Windows'
         run: |
           # Windows용 임시 디렉토리
           $testDir = "$env:TEMP\muggleout-test"
@@ -199,8 +212,6 @@ jobs:
           npm init -y
           npm install $env:GITHUB_WORKSPACE
           npx muggleout --version
-        shell: pwsh
-        if: runner.os == 'Windows'
 
   # 결과 요약
   test-summary:

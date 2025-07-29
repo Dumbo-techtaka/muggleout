@@ -1,6 +1,6 @@
 import chalk from 'chalk';
-import ora from 'ora';
 import inquirer from 'inquirer';
+import { createSpinner, isCI } from '../utils/ci-helper.js';
 import { execa } from 'execa';
 import { checkInstalled, saveInstallRecord } from '../utils/config.js';
 import { runCommand, commandExists } from '../utils/runner.js';
@@ -551,7 +551,8 @@ export async function installTool(toolName) {
   let spinner = null;
   
   if (!isInteractiveInstall) {
-    spinner = ora(`${config.name} 설치 중...`).start();
+    spinner = await createSpinner(`${config.name} 설치 중...`);
+    spinner.start();
   } else {
     console.log(chalk.blue(`🚀 ${config.name} 설치를 시작합니다...`));
   }
