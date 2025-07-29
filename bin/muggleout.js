@@ -71,6 +71,11 @@ program
     await checkTerminalEnvironment();
     
     if (command.length === 0) {
+      // CI 환경에서는 대화형 모드 건너뛰기
+      if (process.env.CI || process.env.MUGGLEOUT_TEST) {
+        console.log('🎮 대화형 모드 (테스트 환경에서는 건너뛰기)');
+        process.exit(0);
+      }
       // 인자가 없으면 대화형 모드
       await startInteractiveMode();
     } else {

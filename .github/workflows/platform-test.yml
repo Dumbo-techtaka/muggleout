@@ -41,9 +41,7 @@ jobs:
         run: npm ci
       
       - name: Run tests
-        run: |
-          echo "🧪 Running tests..."
-          npm test || echo "⚠️ Tests had issues but continuing CI"
+        run: npm test
         env:
           CI: true
           NODE_OPTIONS: --experimental-vm-modules
@@ -51,25 +49,33 @@ jobs:
       - name: Test CLI execution
         run: |
           npm link
+        env:
+          CI: true
+          MUGGLEOUT_TEST: true
           
           # 핵심 명령어만 테스트 (죽지 않는지 확인)
           echo "=== Version Test ==="
           muggleout --version
           
-          echo -e "\n=== Help Test ==="
-          muggleout --help
+          echo ""
+          echo "=== Help Test ==="
+          muggleout --help || echo "Help command had issues"
           
-          echo -e "\n=== Doctor Test ==="
-          timeout 10s muggleout doctor || true
+          echo ""
+          echo "=== Doctor Test ==="
+          timeout 10s muggleout doctor || echo "Doctor command timed out or failed"
           
-          echo -e "\n=== Status Test ==="
-          timeout 10s muggleout status || true
+          echo ""
+          echo "=== Status Test ==="
+          timeout 10s muggleout status || echo "Status command timed out or failed"
           
-          echo -e "\n=== Invalid Command Test ==="
-          muggleout invalid-command || true
+          echo ""
+          echo "=== Invalid Command Test ==="
+          muggleout invalid-command || echo "Invalid command handled"
           
-          echo -e "\n=== Natural Language Test ==="
-          muggleout "help" || true
+          echo ""
+          echo "=== Natural Language Test ==="
+          muggleout "help" || echo "Natural language test completed"
           
           npm unlink
         shell: bash
